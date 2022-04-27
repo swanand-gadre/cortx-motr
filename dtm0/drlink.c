@@ -401,6 +401,8 @@ static enum dpr_state ha_state_infer(const struct m0_confc        *confc,
 	outcome = (M0_IN(obj->co_ha_state,
 			 (M0_NC_ONLINE, M0_NC_DTM_RECOVERING))) ?
 		DPR_ONLINE : DPR_FAILED;
+        if (obj->co_ha_state == M0_NC_TRANSIENT)
+		outcome = DPR_TRANSIENT;
 
 	return M0_RC_INFO(outcome, "fid=" FID_F ", ha_state=%s",
 			  FID_P(fid), m0_ha_state2str(obj->co_ha_state));
