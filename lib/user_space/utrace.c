@@ -51,10 +51,6 @@
 
    @{
  */
-
-enum {
-	UTRACE_HIGH_32BIT=0xFFFFFFFFULL
-};
 pid_t m0_pid_cached;
 
 static int  logfd;
@@ -67,6 +63,9 @@ static int logbuf_map()
 	struct m0_trace_area *trace_area;
 	size_t trace_area_size = M0_TRACE_BUF_HEADER_SIZE + trace_buf_size;
 	int    rc;
+	struct tm tm;
+	m0_time_t stamp = m0_time_now();
+	time_t    ts    = m0_time_seconds(stamp);
 
 	M0_PRE((trace_area_size % m0_pagesize_get()) == 0);
 
@@ -82,9 +81,17 @@ static int logbuf_map()
 
 		int available_bytes = sizeof trace_file_path -
 				      strlen(trace_file_path);
+
+		localtime_r(&ts, &tm);
 		rc = snprintf(trace_file_path + strlen(trace_file_path),
-			available_bytes, "m0trace.%u.%"PRIu32, m0_pid_cached,
-                                          (uint32_t )(m0_time_now() & UTRACE_HIGH_32BIT));
+				available_bytes,
+				"m0trace.%u.%04d-%02d-%02d-%02d:%02d:%02d.%09"
+				PRIu64, m0_pid_cached,
+				tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
+				tm.tm_hour, tm.tm_min, tm.tm_sec,
+				m0_time_nanoseconds(stamp));
+			      
+                                         
 		if (rc < 0) {
 			warn("failed to construct trace file path");
 			return rc;
