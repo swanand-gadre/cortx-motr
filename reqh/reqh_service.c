@@ -894,6 +894,9 @@ M0_INTERNAL void m0_reqh_service_ctxs_shutdown_prepare(struct m0_reqh *reqh)
 	struct m0_reqh_service_ctx *ctx;
 
 	M0_ENTRY();
+	M0_LOG(M0_ALWAYS, "start");
+	/* Prevent creation of new services. */
+	reqh->rh_pools->pc_shutdown = true;
 	/*
 	 * Step 1: Flag every context for abortion.
 	 *
@@ -956,6 +959,7 @@ M0_INTERNAL void m0_reqh_service_ctxs_shutdown_prepare(struct m0_reqh *reqh)
 		if (connecting)
 			reqh_service_ctx_state_wait(ctx, M0_RSC_OFFLINE);
 	} m0_tl_endfor;
+	M0_LOG(M0_ALWAYS, "end");
 	M0_LEAVE();
 }
 
